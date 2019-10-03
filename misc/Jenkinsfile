@@ -1,18 +1,26 @@
-node {
-   def commit_id
-   stage('Preparation') {
-     checkout scm
-     sh "git rev-parse --short HEAD > .git/commit-id"
-     commit_id = readFile('.git/commit-id').trim()
-   }
-   stage('test') {
-     nodejs(nodeJSInstallationName: 'nodejs') {
-       sh 'npm install --only=dev'
-       sh 'npm test'
-     }
-   }
-   stage('build/push') {
-        def app = docker.build("codeyMcCodeStein/test:${commit_id}", '.').push()
-        echo "Hello Build"
-   }
+pipeline {
+  agent any
+
+  tools {nodejs "node"}
+
+  stages {
+
+    stage('Cloning Git') {
+      steps {
+        git 'https://github.com/gustavoapolinario/node-todo-frontend'
+      }
+    }
+
+    stage('Install dependencies') {
+      steps {
+        sh 'npm install'
+      }
+    }
+
+    stage('Test') {
+      steps {
+         sh 'npm test'
+      }
+    }
+  }
 }
